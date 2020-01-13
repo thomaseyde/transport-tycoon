@@ -66,12 +66,11 @@ namespace TransportTycoon.Domain
 
                 if (travelTime == transportationTime)
                 {
-                    return new Unloading(container, transportationTime);
+                    return new Unloading(container.With(transportationTime));
                 }
 
                 return this;
             }
-
          
             public override bool Carries(Container other) => container == other;
         }
@@ -79,17 +78,15 @@ namespace TransportTycoon.Domain
         class Unloading : State
         {
             readonly Container container;
-            readonly Time transportationTime;
 
-            public Unloading(Container container, Time transportationTime)
+            public Unloading(Container container)
             {
                 this.container = container;
-                this.transportationTime = transportationTime;
             }
 
             public override State Unload(Storage storage)
             {
-                storage.Stock(container.With(transportationTime));
+                storage.Stock(container);
                 return new Returning();
             }
         }

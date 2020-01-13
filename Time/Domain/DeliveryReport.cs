@@ -18,8 +18,8 @@ namespace TransportTycoon.Domain
         {
             return containers
                    .Select(container => container.TravelTime)
-                   .Select(travelTime => travelTime.Map(time => time.Value))
-                   .Sum(time => time.ValueOr(0));
+                   .Select(travelTime => travelTime)
+                   .Sum(time => time.Value);
         }
 
         public bool Undelivered(int count)

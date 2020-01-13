@@ -2,12 +2,10 @@ namespace TransportTycoon.Domain
 {
     public class Location
     {
-        public static readonly Location Factory = new Location("FACTORY");
-        public static readonly Location Port = new Location("PORT");
-        public static readonly Location A = new Location("A");
-        public static readonly Location B = new Location("B");
-
-        public string Name { get; }
+        public static readonly Location Factory = new Location();
+        public static readonly Location Port = new Location();
+        public static readonly Location A = new Location();
+        public static readonly Location B = new Location();
 
         public Location NextLocationTowards(Location destination)
         {
@@ -16,9 +14,8 @@ namespace TransportTycoon.Domain
                 : destination;
         }
 
-        Location(string name)
+        Location()
         {
-            Name = name;
         }
     }
 }

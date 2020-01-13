@@ -1,37 +1,77 @@
-using Optional;
-
 namespace TransportTycoon.Domain
 {
     public class Container
     {
-        readonly Destination destination;
-
-        public Option<Time> TravelTime { get; }
+        State state;
 
         public Container(Destination destination)
         {
-            this.destination = destination;
-            TravelTime = Option.None<Time>();
+            state = new Produced(destination);
         }
 
-        Container(Destination destination, Time travelTime)
-        {
-            this.destination = destination;
-            TravelTime = travelTime.SomeNotNull();
-        }
+        public Time TravelTime => state.TravelTime;
 
         public Container With(Time added)
         {
-            var travelTime = TravelTime.Match(
-                time => time.Add(added), 
-                () => added);
-
-            return new Container(destination, travelTime);
+            state = state.With(added);
+            return this;
         }
 
         public Location LocationAfter(Location origin)
         {
-            return origin.NextLocationTowards(destination.Location);
+            return state.LocationAfter(origin);
+        }
+
+        abstract class State
+        {
+            public virtual Time TravelTime => Time.Zero;
+
+            readonly Destination destination;
+
+            protected State(Destination destination)
+            {
+                this.destination = destination;
+            }
+
+            public Location LocationAfter(Location origin)
+            {
+                return origin.NextLocationTowards(destination.Location);
+            }
+
+            public State With(Time time)
+            {
+                return With(time, destination);
+            }
+
+            protected abstract State With(Time time, Destination destination);
+        }
+
+        class Produced : State
+        {
+            public Produced(Destination destination) : base(destination) {
+            }
+
+            protected override State With(Time time, Destination destination)
+            {
+                return new Transporting(destination, time);
+            }
+        }
+
+        class Transporting : State
+        {
+            readonly Time currentTime;
+
+            public Transporting(Destination destination, Time currentTime) : base(destination)
+            {
+                this.currentTime = currentTime;
+            }
+
+            protected override State With(Time time, Destination destination)
+            {
+                return new Transporting(destination, currentTime.Add(time));
+            }
+
+            public override Time TravelTime => currentTime;
         }
     }
 }
