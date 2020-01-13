@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Design.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Design.md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="NFluent" Version="2.6.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
