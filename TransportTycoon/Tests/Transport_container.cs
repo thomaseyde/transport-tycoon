@@ -1,4 +1,5 @@
-﻿using TransportTycoon.Domain;
+﻿using System.Linq;
+using TransportTycoon.Domain;
 using Xunit;
 
 namespace TransportTycoon.Tests
@@ -128,6 +129,7 @@ namespace TransportTycoon.Tests
                 }
             }
 
+            int iterations = 0;
             while (deliveries.Undelivered(destinations.Length))
             {
                 truck1.LoadFrom(factory);
@@ -143,9 +145,15 @@ namespace TransportTycoon.Tests
                 ship.LoadFrom(port);
                 ship.Move();
                 ship.UnloadTo(warehouse);
+
+                if (iterations++ > 100)
+                {
+                    break;
+                }
             }
 
             Assert.Equal(time, deliveries.TotalTravelTime());
+            Assert.Equal(destinations.Length, deliveries.Count());
         }
     }
 }

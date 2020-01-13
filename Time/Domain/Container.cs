@@ -1,35 +1,37 @@
-using TransportTycoon.Optional;
+using Optional;
 
 namespace TransportTycoon.Domain
 {
     public class Container
     {
-        public Destination Destination { get; }
-        public Option<Time> TravelTime { get; set; }
+        readonly Destination destination;
+
+        public Option<Time> TravelTime { get; }
 
         public Container(Destination destination)
         {
-            Destination = destination;
-            TravelTime = Option.None;
+            this.destination = destination;
+            TravelTime = Option.None<Time>();
         }
 
-        private Container(Destination destination, Time travelTime)
+        Container(Destination destination, Time travelTime)
         {
-            Destination = destination;
-            TravelTime = travelTime;
+            this.destination = destination;
+            TravelTime = travelTime.SomeNotNull();
         }
 
-        public Container With(Option<Time> travelTime)
+        public Container With(Time added)
         {
-            var current = TravelTime.Reduce(Time.Zero);
-            var added = travelTime.Reduce(Time.Zero);
+            var travelTime = TravelTime.Match(
+                time => time.Add(added), 
+                () => added);
 
-            return new Container(Destination, current.Add(added));
+            return new Container(destination, travelTime);
         }
 
         public Location LocationAfter(Location origin)
         {
-            return origin.NextLocationTowards(Destination.Location);
+            return origin.NextLocationTowards(destination.Location);
         }
     }
 }

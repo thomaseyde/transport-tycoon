@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using TransportTycoon.Optional;
+using Optional;
 
 namespace TransportTycoon.Domain
 {
@@ -22,7 +23,7 @@ namespace TransportTycoon.Domain
         {
             if (Containers.Count == 0)
             {
-                return Option.None;
+                return Option.None<Container>();
             }
             var container = Containers[0];
             Containers.RemoveAt(0);
@@ -31,6 +32,11 @@ namespace TransportTycoon.Domain
 
         protected virtual void OnStocked(Container container)
         {
+        }
+
+        public void LoadContainer(Action<Container> load)
+        {
+            LoadContainer().MatchSome(load);
         }
     }
 }

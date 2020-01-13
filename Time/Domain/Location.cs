@@ -16,7 +16,7 @@ namespace TransportTycoon.Domain
                 : destination;
         }
 
-        private Location(string name)
+        Location(string name)
         {
             Name = name;
         }

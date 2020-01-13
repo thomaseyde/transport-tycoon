@@ -1,83 +1,101 @@
-using System;
-using TransportTycoon.Optional;
-
 namespace TransportTycoon.Domain
 {
     public abstract class Transporter
     {
-        private readonly Location _origin;
-
-        private Option<Time> _transportationTime;
-        private Option<Location> _destination;
-        private Option<Container> _container;
-
-        private Location _location;
-        private Time _travelTime;
+        State state;
 
         protected Transporter(Location origin)
         {
-            _origin = origin;
-            _location = origin;
-            _destination = Option.None;
-            _transportationTime = Option.None;
-            _container = Option.None;
+            state = new Loading(origin);
         }
 
-        public bool Carries(Container container)
+        public bool Carries(Container container) => state.Carries(container);
+        public void Move() => state = state.Move();
+        protected void Load(Storage storage) => state = state.Load(storage);
+        protected void Unload(Storage storage) => state = state.Unload(storage);
+
+        abstract class State 
         {
-            return _container.Match(c => c == container, () => false);
+            public virtual State Move() => this;
+            public virtual State Unload(Storage storage) => this;
+            public virtual bool Carries(Container other) => false;
+            public virtual State Load(Storage storage) => this;
         }
 
-        protected void Load(Option<Container> container)
+        class Loading : State
         {
-            container
-                .Filter(_ => _location == _origin)
-                .MatchSome(Load);
-        }
+            readonly Location origin;
 
-        public void Move()
-        {
-            _container.MatchSome(
-                _ =>
+            public Loading(Location origin)
+            {
+                this.origin = origin;
+            }
+
+            public override State Load(Storage storage)
+            {
+                State next = this;
+
+                storage.LoadContainer(container =>
                 {
-                    _travelTime = _travelTime.Advance();
+                    var destination = container.LocationAfter(origin);
+                    var transportationTime = Time.Between(origin, destination);
 
-                    _location = _transportationTime
-                                .Filter(time => time == _travelTime)
-                                .Map(_ => _destination)
-                                .Reduce(_location);
-
-                });
-        }
-
-        protected void Unload(Action<Container> handler)
-        {
-            var delivered = DeliveredContainer();
-
-            delivered.MatchSome(
-                container =>
-                {
-                    handler(container);
+                    next = new Delivering(container, transportationTime);
                 });
 
-            _container = delivered.Match(_ => Option.None, () => _container);
+                return next;
+            }
         }
 
-        private Option<Container> DeliveredContainer()
+        class Delivering : State
         {
-            return _destination
-                   .Filter(location => location == _location)
-                   .Map(_ => _container)
-                   .Map(container => container.With(_transportationTime));
+            readonly Container container;
+            readonly Time transportationTime;
+            Time travelTime;
+
+            public Delivering(Container container, Time transportationTime)
+            {
+                this.container = container;
+                this.transportationTime = transportationTime;
+                travelTime = Time.Zero;
+            }
+
+            public override State Move()
+            {
+                travelTime = travelTime.Advance();
+
+                if (travelTime == transportationTime)
+                {
+                    return new Unloading(container, transportationTime);
+                }
+
+                return this;
+            }
+
+         
+            public override bool Carries(Container other) => container == other;
         }
 
-        private void Load(Container container)
+        class Unloading : State
         {
-            var destination = container.LocationAfter(_origin);
-            _transportationTime = Time.Between(_origin, destination);
-            _destination = destination;
-            _travelTime = Time.Zero;
-            _container = container;
+            readonly Container container;
+            readonly Time transportationTime;
+
+            public Unloading(Container container, Time transportationTime)
+            {
+                this.container = container;
+                this.transportationTime = transportationTime;
+            }
+
+            public override State Unload(Storage storage)
+            {
+                storage.Stock(container.With(transportationTime));
+                return new Returning();
+            }
+        }
+
+        class Returning : State
+        {
         }
     }
 }

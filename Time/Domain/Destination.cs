@@ -10,7 +10,7 @@ namespace TransportTycoon.Domain
 
         public Location Location { get; }
 
-        private Destination(Location location) 
+        Destination(Location location) 
             => Location = location;
     }
 }

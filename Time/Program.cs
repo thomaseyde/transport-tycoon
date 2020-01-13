@@ -1,7 +1,4 @@
-﻿using System;
-using TransportTycoon.Domain;
-
-namespace TransportTycoon
+﻿namespace TransportTycoon
 {
     class Program
     {
