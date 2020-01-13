@@ -5,5 +5,10 @@ namespace TransportTycoon.Domain
         public Factory() : base(Location.Factory)
         {
         }
+
+        public void Produce(Container container)
+        {
+            Stock(container);
+        }
     }
 }

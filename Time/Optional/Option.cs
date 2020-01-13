@@ -16,13 +16,16 @@ namespace TransportTycoon.Domain
     public abstract class Option<T>
     {
         public static implicit operator Option<T>(None v) => new None<T>();
-
         public static implicit operator Option<T>(T value) => new Some<T>(value);
+
         public abstract void MatchSome(Action<T> action);
         public abstract T Reduce(T whenNone);
         public abstract Option<TResult> Map<TResult>(Func<T, TResult> map);
-        public abstract Option<TResult> FlatMap<TResult>(Func<T, Option<TResult>> map);
+        public abstract Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map);
         public abstract Option<T> Filter(Func<T, bool> predicate);
+        public abstract TResult Match<TResult>(
+            Func<T, TResult> some,
+            Func<TResult> none);
     }
 
     public class Some<T> : Option<T>
@@ -49,7 +52,7 @@ namespace TransportTycoon.Domain
             return map(_value);
         }
 
-        public override Option<TResult> FlatMap<TResult>(Func<T, Option<TResult>> map)
+        public override Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map)
         {
             return map(_value);
         }
@@ -63,6 +66,12 @@ namespace TransportTycoon.Domain
 
             return Option.None;
         }
+
+        public override TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+        {
+            return some(_value);
+        }
+
 
         public override bool Equals(object obj)
         {
@@ -96,7 +105,7 @@ namespace TransportTycoon.Domain
             return Option.None;
         }
 
-        public override Option<TResult> FlatMap<TResult>(Func<T, Option<TResult>> map)
+        public override Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map)
         {
             return Option.None;
         }
@@ -104,6 +113,11 @@ namespace TransportTycoon.Domain
         public override Option<T> Filter(Func<T, bool> predicate)
         {
             return Option.None;
+        }
+
+        public override TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
+        {
+            return none();
         }
 
         public override bool Equals(object obj)

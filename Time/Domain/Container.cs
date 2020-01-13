@@ -17,5 +17,10 @@ namespace TransportTycoon.Domain
             var with = this;
             return with;
         }
+
+        public Location LocationAfter(Location origin)
+        {
+            return origin.LocationBefore(Destination.Location);
+        }
     }
 }

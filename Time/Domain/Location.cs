@@ -13,5 +13,12 @@ namespace TransportTycoon.Domain
         }
 
         public string Name { get; }
+
+        public Location LocationBefore(Location destination)
+        {
+            return this == Location.Factory && destination == Location.A
+                ? Location.Port
+                : destination;
+        }
     }
 }

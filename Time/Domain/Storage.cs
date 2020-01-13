@@ -17,14 +17,23 @@ namespace TransportTycoon.Domain
         public void Stock(Container container)
         {
             Containers.Add(container);
+            OnStocked(container);
         }
 
-        public int TotalTravelTime()
+        protected virtual void OnStocked(Container container)
         {
-            return Containers
-                   .Select(container => container.TravelTime)
-                   .Select(travelTime => travelTime.Map(time => time.Value))
-                   .Sum(time => time.Reduce(0));
+        }
+
+        public void Unload(Container container)
+        {
+            Containers.Add(container);
+        }
+
+        public Option<Container> LoadContainer()
+        {
+            var container = Containers[0];
+            Containers.RemoveAt(0);
+            return Option.Some(container);
         }
     }
 }
