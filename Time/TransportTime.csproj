@@ -6,4 +6,8 @@
     <RootNamespace>TransportTycoon</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ValueObject" Version="0.5.0" />
+  </ItemGroup>
+
 </Project>
