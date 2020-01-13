@@ -6,19 +6,10 @@ namespace TransportTycoon.Domain
         {
         }
 
-        public void LoadFrom(Factory factory)
-        {
-            Load(factory.LoadContainer());
-        }
+        public void LoadFrom(Factory factory) => Load(factory.LoadContainer());
 
-        public void UnloadTo(Warehouse warehouse)
-        {
-            Unload(warehouse.Stock);
-        }
+        public void UnloadTo(Warehouse warehouse) => Unload(warehouse.Stock);
 
-        public void UnloadTo(Port port)
-        {
-            Unload(port.Stock);
-        }
+        public void UnloadTo(Port port) => Unload(port.Stock);
     }
 }

@@ -8,8 +8,8 @@ namespace TransportTycoon.Tests
         [Fact]
         public void From_port_to_warehouse()
         {
-            var delivered = new ContainerList();
-            var warehouse = new Warehouse(Location.A, delivered);
+            var deliveries = new DeliveryReport();
+            var warehouse = new Warehouse(deliveries);
             var ship = new Ship();
             var port = new Port();
             var container = new Container(Destination.WarehouseA);
@@ -21,30 +21,30 @@ namespace TransportTycoon.Tests
             ship.LoadFrom(port);
 
             Assert.Empty(port.Containers);
-            Assert.Equal(container, ship.Container);
+            Assert.True(ship.Carries(container));
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 ship.Move();
                 ship.UnloadTo(warehouse);
-                Assert.Equal(container, ship.Container);
+                Assert.True(ship.Carries(container));
             }
           
             ship.Move();
             ship.UnloadTo(warehouse);
 
             Assert.NotEmpty(warehouse.Containers);
-            Assert.Equal(Option.None, ship.Container);
+            Assert.False(ship.Carries(container));
 
-            Assert.Equal(4, delivered.TotalTravelTime());
-            Assert.Single(delivered);
+            Assert.Equal(4, deliveries.TotalTravelTime());
+            Assert.Single(deliveries);
         }
 
         [Fact]
         public void From_factory_to_warehouse()
         {
-            var delivered = new ContainerList();
-            var warehouse = new Warehouse(Location.B, delivered);
+            var deliveries = new DeliveryReport();
+            var warehouse = new Warehouse(deliveries);
             var truck = new Truck(Location.Factory);
             var factory = new Factory();
             var container = new Container(Destination.WarehouseB);
@@ -56,23 +56,23 @@ namespace TransportTycoon.Tests
             truck.LoadFrom(factory);
 
             Assert.Empty(factory.Containers);
-            Assert.Equal(container, truck.Container);
+            Assert.True(truck.Carries(container));
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 truck.Move();
                 truck.UnloadTo(warehouse);
-                Assert.Equal(container, truck.Container);
+                Assert.True(truck.Carries(container));
             }
 
             truck.Move();
             truck.UnloadTo(warehouse);
 
             Assert.NotEmpty(warehouse.Containers);
-            Assert.Equal(Option.None, truck.Container);
+            Assert.False(truck.Carries(container));
 
-            Assert.Equal(5, delivered.TotalTravelTime());
-            Assert.Single(delivered);
+            Assert.Equal(5, deliveries.TotalTravelTime());
+            Assert.Single(deliveries);
         }
 
         [Fact]
@@ -90,13 +90,13 @@ namespace TransportTycoon.Tests
             truck.LoadFrom(factory);
 
             Assert.Empty(factory.Containers);
-            Assert.Equal(container, truck.Container);
+            Assert.True(truck.Carries(container));
 
             truck.Move();
             truck.UnloadTo(port);
 
             Assert.NotEmpty(port.Containers);
-            Assert.Equal(Option.None, truck.Container);
+            Assert.False(truck.Carries(container));
         }
     }
 }

@@ -1,15 +1,17 @@
+using TransportTycoon.Optional;
+
 namespace TransportTycoon.Domain
 {
     public class Container
     {
+        public Destination Destination { get; }
+        public Option<Time> TravelTime { get; set; }
+
         public Container(Destination destination)
         {
             Destination = destination;
             TravelTime = Option.None;
         }
-
-        public Destination Destination { get; }
-        public Option<Time> TravelTime { get; set; }
 
         public Container With(Option<Time> travelTime)
         {
@@ -20,7 +22,7 @@ namespace TransportTycoon.Domain
 
         public Location LocationAfter(Location origin)
         {
-            return origin.LocationBefore(Destination.Location);
+            return origin.NextLocationTowards(Destination.Location);
         }
     }
 }

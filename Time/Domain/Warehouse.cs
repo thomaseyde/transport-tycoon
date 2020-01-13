@@ -1,19 +1,14 @@
-using System.Collections.Generic;
 
 namespace TransportTycoon.Domain
 {
     public class Warehouse : Storage
     {
-        private readonly ContainerList _delivered;
+        private readonly DeliveryReport _deliveries;
 
-        public Warehouse(Location location, ContainerList delivered) : base(location)
-        {
-            _delivered = delivered;
-        }
+        public Warehouse(DeliveryReport deliveries) 
+            => _deliveries = deliveries;
 
-        protected override void OnStocked(Container container)
-        {
-            _delivered.Add(container);
-        }
+        protected override void OnStocked(Container container) 
+            => _deliveries.Add(container);
     }
 }

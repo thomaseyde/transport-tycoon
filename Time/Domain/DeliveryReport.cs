@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TransportTycoon.Domain
 {
-    public class ContainerList : IEnumerable
+    public class DeliveryReport : IEnumerable
     {
         private readonly List<Container> _containers = new List<Container>();
 

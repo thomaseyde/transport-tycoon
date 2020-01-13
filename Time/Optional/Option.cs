@@ -1,6 +1,6 @@
 using System;
 
-namespace TransportTycoon.Domain
+namespace TransportTycoon.Optional
 {
     public class Option
     {
@@ -21,7 +21,7 @@ namespace TransportTycoon.Domain
         public abstract void MatchSome(Action<T> action);
         public abstract T Reduce(T whenNone);
         public abstract Option<TResult> Map<TResult>(Func<T, TResult> map);
-        public abstract Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map);
+        public abstract Option<TResult> Map<TResult>(Func<T, Option<TResult>> map);
         public abstract Option<T> Filter(Func<T, bool> predicate);
         public abstract TResult Match<TResult>(
             Func<T, TResult> some,
@@ -52,7 +52,7 @@ namespace TransportTycoon.Domain
             return map(_value);
         }
 
-        public override Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map)
+        public override Option<TResult> Map<TResult>(Func<T, Option<TResult>> map)
         {
             return map(_value);
         }
@@ -105,7 +105,7 @@ namespace TransportTycoon.Domain
             return Option.None;
         }
 
-        public override Option<TResult> MapOptional<TResult>(Func<T, Option<TResult>> map)
+        public override Option<TResult> Map<TResult>(Func<T, Option<TResult>> map)
         {
             return Option.None;
         }

@@ -1,27 +1,21 @@
 using System.Collections.Generic;
-using System.Linq;
+using TransportTycoon.Optional;
 
 namespace TransportTycoon.Domain
 {
     public abstract class Storage
     {
-        protected Storage(Location location)
+        public List<Container> Containers { get; }
+
+        protected Storage()
         {
-            Location = location;
             Containers = new List<Container>();
         }
-
-        public List<Container> Containers { get; }
-        public Location Location { get; }
 
         public void Stock(Container container)
         {
             Containers.Add(container);
             OnStocked(container);
-        }
-
-        protected virtual void OnStocked(Container container)
-        {
         }
 
         public void Unload(Container container)
@@ -34,6 +28,10 @@ namespace TransportTycoon.Domain
             var container = Containers[0];
             Containers.RemoveAt(0);
             return Option.Some(container);
+        }
+
+        protected virtual void OnStocked(Container container)
+        {
         }
     }
 }

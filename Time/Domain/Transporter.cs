@@ -1,22 +1,30 @@
 using System;
+using TransportTycoon.Optional;
 
 namespace TransportTycoon.Domain
 {
     public abstract class Transporter
     {
-        private Option<Time> _transportationTime;
-        private Option<Container> _container;
         private readonly Location _origin;
+
+        private Option<Time> _transportationTime;
+        private Option<Location> _destination;
+        private Option<Container> _container;
+
         private Location _location;
         private Time _travelTime;
-        private Option<Location> _destination;
 
         protected Transporter(Location origin)
         {
             _origin = origin;
             _location = origin;
-            _container = Option.None;
             _transportationTime = Time.Zero;
+            _container = Option.None;
+        }
+
+        public bool Carries(Container container)
+        {
+            return _container.Match(c => c == container, () => false);
         }
 
         protected void Load(Option<Container> container)
@@ -32,24 +40,24 @@ namespace TransportTycoon.Domain
 
             _location = _transportationTime
                         .Filter(time => time == _travelTime)
-                        .MapOptional(_ => _destination)
+                        .Map(_ => _destination)
                         .Reduce(_location);
         }
 
         protected void Unload(Action<Container> handler)
         {
-            var transported = TransportedContainer();
+            var delivered = DeliveredContainer();
 
-            transported.MatchSome(handler);
+            delivered.MatchSome(handler);
 
-            _container = transported.Match(_ => Option.None, () => _container);
+            _container = delivered.Match(_ => Option.None, () => _container);
         }
 
-        private Option<Container> TransportedContainer()
+        private Option<Container> DeliveredContainer()
         {
             return _destination
                    .Filter(location => location == _location)
-                   .MapOptional(_ => _container)
+                   .Map(_ => _container)
                    .Map(container => container.With(_transportationTime));
         }
 
@@ -61,7 +69,5 @@ namespace TransportTycoon.Domain
             _travelTime = Time.Zero;
             _container = container;
         }
-
-        public Option<Container> Container => _container;
     }
 }

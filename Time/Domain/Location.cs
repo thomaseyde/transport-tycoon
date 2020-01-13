@@ -7,18 +7,18 @@ namespace TransportTycoon.Domain
         public static readonly Location A = new Location("A");
         public static readonly Location B = new Location("B");
 
+        public string Name { get; }
+
+        public Location NextLocationTowards(Location destination)
+        {
+            return this == Factory && destination == A
+                ? Port
+                : destination;
+        }
+
         private Location(string name)
         {
             Name = name;
-        }
-
-        public string Name { get; }
-
-        public Location LocationBefore(Location destination)
-        {
-            return this == Location.Factory && destination == Location.A
-                ? Location.Port
-                : destination;
         }
     }
 }

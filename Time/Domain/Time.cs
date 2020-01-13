@@ -7,19 +7,6 @@ namespace TransportTycoon.Domain
     {
         public static readonly Time Zero = new Time(0);
 
-        public Time(int value)
-        {
-            Value = value;
-        }
-
-        public int Value { get; }
-
-
-        public Time Advance()
-        {
-            return new Time(Value + 1);
-        }
-
         public static Time Between(Location origin, Location destination)
         {
             if (origin == Location.Port)
@@ -41,5 +28,11 @@ namespace TransportTycoon.Domain
 
             throw new InvalidOperationException();
         }
+
+        public int Value { get; }
+
+        public Time(int value) => Value = value;
+
+        public Time Advance() => new Time(Value + 1);
     }
 }
