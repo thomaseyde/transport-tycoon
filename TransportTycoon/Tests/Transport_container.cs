@@ -88,6 +88,8 @@ namespace TransportTycoon.Tests
 
             Assert.NotEmpty(factory.Containers);
 
+            Assert.True(truck.AtOrigin());
+            
             truck.LoadFrom(factory);
 
             Assert.Empty(factory.Containers);
@@ -98,6 +100,11 @@ namespace TransportTycoon.Tests
 
             Assert.NotEmpty(port.Containers);
             Assert.False(truck.Carries(container));
+            Assert.False(truck.AtOrigin());
+
+            truck.Move();
+            Assert.True(truck.AtOrigin());
+
         }
 
         [Theory]

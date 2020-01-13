@@ -14,12 +14,18 @@ namespace TransportTycoon.Domain
         protected void Load(Storage storage) => state = state.Load(storage);
         protected void Unload(Storage storage) => state = state.Unload(storage);
 
-        abstract class State 
+        public bool AtOrigin()
+        {
+            return state.AtOrigin();
+        }
+
+        abstract class State
         {
             public virtual State Move() => this;
             public virtual State Unload(Storage storage) => this;
             public virtual bool Carries(Container other) => false;
             public virtual State Load(Storage storage) => this;
+            public virtual bool AtOrigin() => false;
         }
 
         class Loading : State
@@ -40,10 +46,15 @@ namespace TransportTycoon.Domain
                     var destination = container.LocationAfter(origin);
                     var transportationTime = Time.Between(origin, destination);
 
-                    next = new Delivering(container, transportationTime);
+                    next = new Delivering(container, transportationTime, origin);
                 });
 
                 return next;
+            }
+
+            public override bool AtOrigin()
+            {
+                return true;
             }
         }
 
@@ -52,11 +63,16 @@ namespace TransportTycoon.Domain
             readonly Container container;
             readonly Time transportationTime;
             Time travelTime;
+            readonly Location origin;
 
-            public Delivering(Container container, Time transportationTime)
+            public Delivering(
+                Container container,
+                Time transportationTime,
+                Location origin)
             {
                 this.container = container;
                 this.transportationTime = transportationTime;
+                this.origin = origin;
                 travelTime = Time.Zero;
             }
 
@@ -66,33 +82,62 @@ namespace TransportTycoon.Domain
 
                 if (travelTime == transportationTime)
                 {
-                    return new Unloading(container.With(transportationTime));
+                    return new Unloading(container, transportationTime, origin);
                 }
 
                 return this;
             }
-         
+
             public override bool Carries(Container other) => container == other;
         }
 
         class Unloading : State
         {
             readonly Container container;
+            readonly Time transportationTime;
+            readonly Location origin;
 
-            public Unloading(Container container)
+            public Unloading(
+                Container container,
+                Time transportationTime,
+                Location origin)
             {
-                this.container = container;
+                this.container = container.With(transportationTime);
+                this.transportationTime = transportationTime;
+                this.origin = origin;
             }
 
             public override State Unload(Storage storage)
             {
                 storage.Stock(container);
-                return new Returning();
+                return new Returning(transportationTime, origin);
             }
         }
 
         class Returning : State
         {
+            readonly Time transportationTime;
+            readonly Location origin;
+            Time travelTime;
+
+            public Returning(Time transportationTime, Location origin)
+            {
+                this.transportationTime = transportationTime;
+                this.origin = origin;
+                travelTime = Time.Zero;
+            }
+
+            public override State Move()
+            {
+                travelTime = travelTime.Advance();
+
+                if (travelTime == transportationTime)
+                {
+                    return new Loading(origin);
+                }
+
+                return this;
+            }
         }
     }
 }
