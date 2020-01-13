@@ -102,15 +102,22 @@ namespace TransportTycoon.Domain
                 Time transportationTime,
                 Location origin)
             {
-                this.container = container.With(transportationTime);
+                this.container = container;
                 this.transportationTime = transportationTime;
                 this.origin = origin;
             }
 
             public override State Unload(Storage storage)
             {
-                storage.Stock(container);
-                return new Returning(transportationTime, origin);
+                var destination = container.LocationAfter(origin);
+
+                if (destination == storage.Location)
+                {
+                    storage.Stock(container.With(transportationTime));
+                    return new Returning(transportationTime, origin);
+                }
+
+                return this;
             }
         }
 

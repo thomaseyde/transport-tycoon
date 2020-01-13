@@ -5,8 +5,8 @@ namespace TransportTycoon.Domain
     {
         readonly DeliveryReport deliveries;
 
-        public Warehouse(DeliveryReport deliveries) 
-            => this.deliveries = deliveries;
+        public Warehouse(DeliveryReport deliveries, Location location) 
+            : base(location) => this.deliveries = deliveries;
 
         protected override void OnStocked(Container container) 
             => deliveries.Add(container);

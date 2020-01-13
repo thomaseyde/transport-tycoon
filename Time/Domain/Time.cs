@@ -35,9 +35,8 @@ namespace TransportTycoon.Domain
 
         public Time Advance() => new Time(Value + 1);
 
-        public Time Add(Time added)
-        {
-            return new Time(Value + added.Value);
-        }
+        public Time Add(Time added) => new Time(Value + added.Value);
+
+        public override string ToString() => Value.ToString();
     }
 }

@@ -16,10 +16,12 @@ namespace TransportTycoon.Domain
 
         public int TotalTravelTime()
         {
+
             return containers
                    .Select(container => container.TravelTime)
                    .Select(travelTime => travelTime)
-                   .Sum(time => time.Value);
+                   .Prepend(Time.Zero)
+                   .Max(time => time.Value);
         }
 
         public bool Undelivered(int count)

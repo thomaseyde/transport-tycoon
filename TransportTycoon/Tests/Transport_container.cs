@@ -10,7 +10,7 @@ namespace TransportTycoon.Tests
         public void From_port_to_warehouse()
         {
             var deliveries = new DeliveryReport();
-            var warehouse = new Warehouse(deliveries);
+            var warehouse = new Warehouse(deliveries, Location.A);
             var ship = new Ship();
             var port = new Port();
             var container = new Container(Destination.WarehouseA);
@@ -45,7 +45,7 @@ namespace TransportTycoon.Tests
         public void From_factory_to_warehouse()
         {
             var deliveries = new DeliveryReport();
-            var warehouse = new Warehouse(deliveries);
+            var warehouse = new Warehouse(deliveries, Location.B);
             var truck = new Truck(Location.Factory);
             var factory = new Factory();
             var container = new Container(Destination.WarehouseB);
@@ -109,6 +109,7 @@ namespace TransportTycoon.Tests
 
         [Theory]
         [InlineData("A", 5)]
+        [InlineData("B", 5)]
         [InlineData("AB", 5)]
         //[InlineData("ABB", 7)]
         public void All(string destinations, int time)
@@ -117,7 +118,8 @@ namespace TransportTycoon.Tests
 
             var factory = new Factory();
             var port = new Port();
-            var warehouse = new Warehouse(deliveries);
+            var warehouseA = new Warehouse(deliveries, Location.A);
+            var warehouseB = new Warehouse(deliveries, Location.B);
             
             var truck1 = new Truck(Location.Factory);
             var truck2 = new Truck(Location.Factory);
@@ -125,15 +127,16 @@ namespace TransportTycoon.Tests
 
             foreach (var destination in destinations)
             {
+                Destination d = null;
                 if (destination=='A')
                 {
-                    factory.Produce(
-                        new Container(Destination.WarehouseA));
+                    d = Destination.WarehouseA;
                 }else if (destination == 'B')
                 {
-                    factory.Produce(
-                        new Container(Destination.WarehouseB));
+                    d = Destination.WarehouseB;
                 }
+
+                if (d != null) factory.Produce(new Container(d));
             }
 
             int iterations = 0;
@@ -141,17 +144,18 @@ namespace TransportTycoon.Tests
             {
                 truck1.LoadFrom(factory);
                 truck1.Move();
+                
                 truck1.UnloadTo(port);
-                truck1.UnloadTo(warehouse);
+                truck1.UnloadTo(warehouseB);
 
                 truck2.LoadFrom(factory);
                 truck2.Move();
                 truck2.UnloadTo(port);
-                truck2.UnloadTo(warehouse);
+                truck2.UnloadTo(warehouseB);
 
                 ship.LoadFrom(port);
                 ship.Move();
-                ship.UnloadTo(warehouse);
+                ship.UnloadTo(warehouseA);
 
                 if (iterations++ > 100)
                 {
@@ -159,8 +163,8 @@ namespace TransportTycoon.Tests
                 }
             }
 
-            Assert.Equal(time, deliveries.TotalTravelTime());
             Assert.Equal(destinations.Length, deliveries.Count());
+            Assert.Equal(time, deliveries.TotalTravelTime());
         }
     }
 }

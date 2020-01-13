@@ -12,5 +12,8 @@ namespace TransportTycoon.Domain
 
         Destination(Location location) 
             => Location = location;
+
+        public override string ToString() 
+            => Location.ToString();
     }
 }

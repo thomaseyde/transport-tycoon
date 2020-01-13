@@ -6,9 +6,11 @@ namespace TransportTycoon.Domain
     public abstract class Storage
     {
         public List<Container> Containers { get; }
+        public Location Location { get; }
 
-        protected Storage()
+        protected Storage(Location location)
         {
+            Location = location;
             Containers = new List<Container>();
         }
 
