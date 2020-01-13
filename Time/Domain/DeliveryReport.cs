@@ -26,5 +26,9 @@ namespace TransportTycoon.Domain
                    .Sum(time => time.Reduce(0));
         }
 
+        public bool Undelivered(int count)
+        {
+            return _containers.Count < count;
+        }
     }
 }

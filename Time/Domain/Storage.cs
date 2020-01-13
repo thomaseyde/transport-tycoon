@@ -18,13 +18,12 @@ namespace TransportTycoon.Domain
             OnStocked(container);
         }
 
-        public void Unload(Container container)
-        {
-            Containers.Add(container);
-        }
-
         public Option<Container> LoadContainer()
         {
+            if (Containers.Count == 0)
+            {
+                return Option.None;
+            }
             var container = Containers[0];
             Containers.RemoveAt(0);
             return Option.Some(container);

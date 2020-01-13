@@ -13,11 +13,18 @@ namespace TransportTycoon.Domain
             TravelTime = Option.None;
         }
 
+        private Container(Destination destination, Time travelTime)
+        {
+            Destination = destination;
+            TravelTime = travelTime;
+        }
+
         public Container With(Option<Time> travelTime)
         {
-            TravelTime = travelTime;
-            var with = this;
-            return with;
+            var current = TravelTime.Reduce(Time.Zero);
+            var added = travelTime.Reduce(Time.Zero);
+
+            return new Container(Destination, current.Add(added));
         }
 
         public Location LocationAfter(Location origin)

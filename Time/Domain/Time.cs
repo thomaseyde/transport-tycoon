@@ -34,5 +34,10 @@ namespace TransportTycoon.Domain
         public Time(int value) => Value = value;
 
         public Time Advance() => new Time(Value + 1);
+
+        public Time Add(Time added)
+        {
+            return new Time(Value + added.Value);
+        }
     }
 }

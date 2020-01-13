@@ -98,5 +98,54 @@ namespace TransportTycoon.Tests
             Assert.NotEmpty(port.Containers);
             Assert.False(truck.Carries(container));
         }
+
+        [Theory]
+        [InlineData("A", 5)]
+        [InlineData("AB", 5)]
+        //[InlineData("ABB", 7)]
+        public void All(string destinations, int time)
+        {
+            var deliveries = new DeliveryReport();
+
+            var factory = new Factory();
+            var port = new Port();
+            var warehouse = new Warehouse(deliveries);
+            
+            var truck1 = new Truck(Location.Factory);
+            var truck2 = new Truck(Location.Factory);
+            var ship = new Ship();
+
+            foreach (var destination in destinations)
+            {
+                if (destination=='A')
+                {
+                    factory.Produce(
+                        new Container(Destination.WarehouseA));
+                }else if (destination == 'B')
+                {
+                    factory.Produce(
+                        new Container(Destination.WarehouseB));
+                }
+            }
+
+            while (deliveries.Undelivered(destinations.Length))
+            {
+                truck1.LoadFrom(factory);
+                truck1.Move();
+                truck1.UnloadTo(port);
+                truck1.UnloadTo(warehouse);
+
+                truck2.LoadFrom(factory);
+                truck2.Move();
+                truck2.UnloadTo(port);
+                truck2.UnloadTo(warehouse);
+
+                ship.LoadFrom(port);
+                ship.Move();
+                ship.UnloadTo(warehouse);
+            }
+
+            Assert.Equal(time, deliveries.TotalTravelTime());
+        }
     }
 }

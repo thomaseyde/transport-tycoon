@@ -18,7 +18,8 @@ namespace TransportTycoon.Domain
         {
             _origin = origin;
             _location = origin;
-            _transportationTime = Time.Zero;
+            _destination = Option.None;
+            _transportationTime = Option.None;
             _container = Option.None;
         }
 
@@ -36,19 +37,28 @@ namespace TransportTycoon.Domain
 
         public void Move()
         {
-            _travelTime = _travelTime.Advance();
+            _container.MatchSome(
+                _ =>
+                {
+                    _travelTime = _travelTime.Advance();
 
-            _location = _transportationTime
-                        .Filter(time => time == _travelTime)
-                        .Map(_ => _destination)
-                        .Reduce(_location);
+                    _location = _transportationTime
+                                .Filter(time => time == _travelTime)
+                                .Map(_ => _destination)
+                                .Reduce(_location);
+
+                });
         }
 
         protected void Unload(Action<Container> handler)
         {
             var delivered = DeliveredContainer();
 
-            delivered.MatchSome(handler);
+            delivered.MatchSome(
+                container =>
+                {
+                    handler(container);
+                });
 
             _container = delivered.Match(_ => Option.None, () => _container);
         }
