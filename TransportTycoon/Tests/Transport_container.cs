@@ -117,7 +117,8 @@ namespace TransportTycoon.Tests
         [InlineData("AB", 5)]
         [InlineData("ABB", 7)]
         [InlineData("AABABBAB", 29)]
-        [InlineData("ABBBABAAABBB", 47)]
+        [InlineData("ABBBABAAABBB", 41)]
+        //[InlineData("ABBBABAAABBB", 47)]
         public void All(string destinations, int time)
         {
             var clock = new Clock();
@@ -163,6 +164,14 @@ namespace TransportTycoon.Tests
                 truck2.LoadFrom(factory, clock.Now);
                 ship.LoadFrom(port, clock.Now);
 
+                /*
+                 * todo - remove clock.Now
+                 *
+                 * clock.Tick() should preferably happen last, ending the turn
+                 * clock.Now should only be passed to Move, but then all state
+                 * transitions should happen only there.
+                 */
+                 
                 clock.Tick();
 
                 truck1.Move(clock.Now);
