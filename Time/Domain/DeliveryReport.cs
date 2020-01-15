@@ -18,7 +18,7 @@ namespace TransportTycoon.Domain
         {
             return containers
                    .Select(container => container.TravelTime)
-                   .Prepend(Time.Zero)
+                   .Prepend(Moment.Zero)
                    .Max(time => time.Value);
         }
 

@@ -3,15 +3,15 @@ namespace TransportTycoon.Domain
     public class Container
     {
         readonly Destination destination;
-        public Time TravelTime { get; set; }
+        public Moment TravelTime { get; set; }
 
         public Container(Destination destination)
         {
             this.destination = destination;
-            TravelTime = Time.Zero;
+            TravelTime = Moment.Zero;
         }
 
-        public Container With(Time currentTime)
+        public Container With(Moment currentTime)
         {
             TravelTime = currentTime;
             return this;

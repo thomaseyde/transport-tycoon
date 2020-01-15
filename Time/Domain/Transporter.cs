@@ -12,9 +12,9 @@ namespace TransportTycoon.Domain
         }
 
         public bool Carries(Container container) => state.Carries(container);
-        public void Move(Time currentTime) => state = state.Move(currentTime);
-        protected void Load(Storage storage, Time currentTime) => state = state.Load(storage, currentTime);
-        protected void Unload(Storage storage, Time currentTime) => state = state.Unload(storage, currentTime);
+        public void Move(Moment currentTime) => state = state.Move(currentTime);
+        protected void Load(Storage storage, Moment currentTime) => state = state.Load(storage, currentTime);
+        protected void Unload(Storage storage, Moment currentTime) => state = state.Unload(storage, currentTime);
 
         public bool AtOrigin()
         {
@@ -27,10 +27,10 @@ namespace TransportTycoon.Domain
             /*
              * todo - currentTime is different from travelTime, destinationTime
              */
-            public virtual State Move(Time currentTime) => this;
-            public virtual State Unload(Storage storage, Time currentTime) => this;
+            public virtual State Move(Moment currentTime) => this;
+            public virtual State Unload(Storage storage, Moment currentTime) => this;
             public virtual bool Carries(Container other) => false;
-            public virtual State Load(Storage storage, Time currentTime) => this;
+            public virtual State Load(Storage storage, Moment currentTime) => this;
             public virtual bool AtOrigin() => false;
         }
 
@@ -43,17 +43,17 @@ namespace TransportTycoon.Domain
                 this.origin = origin;
             }
 
-            public override State Load(Storage storage, Time currentTime)
+            public override State Load(Storage storage, Moment currentTime)
             {
                 State next = this;
 
                 storage.Deplete(container =>
                 {
                     var destination = container.LocationAfter(origin);
-                    var transportationTime = Time.Between(origin, destination);
-                    var deliveryTime = currentTime.Add(transportationTime);
+                    var duration = Moment.Between(origin, destination);
+                    var deliveryTime = currentTime.Add(duration);
                     
-                    next = new Delivering(container, deliveryTime, origin);
+                    next = new Delivering(container, origin, duration, deliveryTime);
                 });
 
                 return next;
@@ -68,24 +68,27 @@ namespace TransportTycoon.Domain
         class Delivering : State
         {
             readonly Container container;
-            readonly Time deliveryTime;
+            readonly Duration duration;
             readonly Location origin;
+            Moment arrivalTime;
 
             public Delivering(
                 Container container,
-                Time deliveryTime,
-                Location origin)
+                Location origin,
+                Duration duration,
+                Moment arrivalTime)
             {
                 this.container = container;
-                this.deliveryTime = deliveryTime;
+                this.duration = duration;
                 this.origin = origin;
+                this.arrivalTime = arrivalTime;
             }
 
-            public override State Move(Time currentTime)
+            public override State Move(Moment currentTime)
             {
-                if (currentTime == deliveryTime)
+                if (currentTime == arrivalTime)
                 {
-                    return new Unloading(container, deliveryTime, origin);
+                    return new Unloading(container, duration, origin);
                 }
 
                 return this;
@@ -97,20 +100,20 @@ namespace TransportTycoon.Domain
         class Unloading : State
         {
             readonly Container container;
-            readonly Time travelTime;
+            readonly Duration duration;
             readonly Location origin;
 
             public Unloading(
                 Container container,
-                Time travelTime,
+                Duration duration,
                 Location origin)
             {
                 this.container = container;
-                this.travelTime = travelTime;
+                this.duration = duration;
                 this.origin = origin;
             }
 
-            public override State Unload(Storage storage, Time currentTime)
+            public override State Unload(Storage storage, Moment currentTime)
             {
                 var destination = container.LocationAfter(origin);
 
@@ -122,7 +125,7 @@ namespace TransportTycoon.Domain
                  * todo - arrivalTime = currentTime + travelTime
                  * todo - Moment and Duration
                  */
-                    var arrivalTime = currentTime.Add(travelTime);
+                    var arrivalTime = currentTime.Add(duration);
                     return new Returning(arrivalTime, origin);
                 }
 
@@ -132,16 +135,16 @@ namespace TransportTycoon.Domain
 
         class Returning : State
         {
-            readonly Time arrivalTime;
+            readonly Moment arrivalTime;
             readonly Location origin;
 
-            public Returning(Time arrivalTime, Location origin)
+            public Returning(Moment arrivalTime, Location origin)
             {
                 this.arrivalTime = arrivalTime;
                 this.origin = origin;
             }
 
-            public override State Move(Time currentTime)
+            public override State Move(Moment currentTime)
             {
                 if (arrivalTime == currentTime)
                 {

@@ -6,10 +6,10 @@ namespace TransportTycoon.Domain
         {
         }
 
-        public void LoadFrom(Factory factory, Time currentTime) => Load(factory, currentTime);
+        public void LoadFrom(Factory factory, Moment currentTime) => Load(factory, currentTime);
 
-        public void UnloadTo(Warehouse warehouse, Time currentTime) => Unload(warehouse, currentTime);
+        public void UnloadTo(Warehouse warehouse, Moment currentTime) => Unload(warehouse, currentTime);
 
-        public void UnloadTo(Port port, Time currentTime) => Unload(port, currentTime);
+        public void UnloadTo(Port port, Moment currentTime) => Unload(port, currentTime);
     }
 }

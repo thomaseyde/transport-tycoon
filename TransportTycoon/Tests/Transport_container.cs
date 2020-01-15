@@ -123,8 +123,8 @@ namespace TransportTycoon.Tests
         [InlineData("B", 5)]
         [InlineData("AB", 5)]
         [InlineData("ABB", 7)]
-        //[InlineData("AABABBAB", 29)]
-        //[InlineData("ABBBABAAABBB", 47)]
+        [InlineData("AABABBAB", 29)]
+        [InlineData("ABBBABAAABBB", 47)]
         public void All(string destinations, int time)
         {
             var clock = new Clock();
