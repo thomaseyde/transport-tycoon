@@ -92,8 +92,6 @@ namespace TransportTycoon.Tests
             var factory = new Factory();
             var container = new Container(Destination.WarehouseA);
 
-            Assert.True(truck.AtOrigin());
-
             factory.Produce(container);
             Assert.NotEmpty(factory.Containers);
 
@@ -109,13 +107,8 @@ namespace TransportTycoon.Tests
 
             Assert.NotEmpty(port.Containers);
             Assert.False(truck.Carries(container));
-            Assert.False(truck.AtOrigin());
 
             clock.Tick();
-            
-            truck.Move(clock.Now);
-
-            Assert.True(truck.AtOrigin());
         }
 
         [Theory]

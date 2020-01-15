@@ -1,5 +1,3 @@
-using Value;
-
 namespace TransportTycoon.Domain
 {
     public abstract class Transporter
@@ -16,22 +14,12 @@ namespace TransportTycoon.Domain
         protected void Load(Storage storage, Moment currentTime) => state = state.Load(storage, currentTime);
         protected void Unload(Storage storage, Moment currentTime) => state = state.Unload(storage, currentTime);
 
-        public bool AtOrigin()
-        {
-            //todo - used only for testing
-            return state.AtOrigin();
-        }
-
         abstract class State
         {
-            /*
-             * todo - currentTime is different from travelTime, destinationTime
-             */
             public virtual State Move(Moment currentTime) => this;
             public virtual State Unload(Storage storage, Moment currentTime) => this;
             public virtual bool Carries(Container other) => false;
             public virtual State Load(Storage storage, Moment currentTime) => this;
-            public virtual bool AtOrigin() => false;
         }
 
         class Loading : State
@@ -58,11 +46,6 @@ namespace TransportTycoon.Domain
 
                 return next;
             }
-
-            public override bool AtOrigin()
-            {
-                return true;
-            }
         }
 
         class Delivering : State
@@ -70,7 +53,7 @@ namespace TransportTycoon.Domain
             readonly Container container;
             readonly Duration duration;
             readonly Location origin;
-            Moment arrivalTime;
+            readonly Moment arrivalTime;
 
             public Delivering(
                 Container container,
@@ -117,19 +100,12 @@ namespace TransportTycoon.Domain
             {
                 var destination = container.LocationAfter(origin);
 
-                if (destination == storage.Location)
-                {
-                    storage.Replenish(container.With(currentTime));
+                if (destination != storage.Location) return this;
 
-                /*
-                 * todo - arrivalTime = currentTime + travelTime
-                 * todo - Moment and Duration
-                 */
-                    var arrivalTime = currentTime.Add(duration);
-                    return new Returning(arrivalTime, origin);
-                }
+                storage.Replenish(container.With(currentTime));
+                var arrivalTime = currentTime.Add(duration);
+                return new Returning(arrivalTime, origin);
 
-                return this;
             }
         }
 
