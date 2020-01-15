@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using TransportTycoon.Time;
 using Xunit;
 
@@ -39,9 +39,9 @@ namespace TransportTycoon.WithTypes
             var factory = new Factory();
             var port = new Port();
 
-            factory.Produce(new Container());
+            factory.Produce(new Container(port));
 
-            var loading = new Loading(factory, port);
+            var loading = new Loading(factory, () => new Unloading(factory, port));
             var moving = loading.Transit();
             var unloading = moving.Transit();
             var returning = unloading.Transit();
@@ -52,11 +52,11 @@ namespace TransportTycoon.WithTypes
         [Fact]
         public void Load_one_container_from_factory()
         {
-            var container = new Container();
-            var factory = new Factory();
             var port = new Port();
-            var loading = new Loading(factory, port);
-            
+            var factory = new Factory();
+            var loading = new Loading(factory, () => new Unloading(factory, port));
+            var container = new Container(port);
+
             factory.Produce(container);
             var moving = (Moving) loading.Transit();
 
@@ -68,7 +68,7 @@ namespace TransportTycoon.WithTypes
         {
             var factory = new Factory();
             var port = new Port();
-            var loading = new Loading(factory, port);
+            var loading = new Loading(factory, () => new Unloading(factory, port));
             var next = loading.Transit();
 
             Assert.IsType<Loading>(next);
@@ -77,10 +77,10 @@ namespace TransportTycoon.WithTypes
         [Fact]
         public void Move_container()
         {
-            var container = new Container();
             var factory = new Factory();
             var port = new Port();
-            var loading = new Loading(factory, port);
+            var loading = new Loading(factory, () => new Unloading(factory, port));
+            var container = new Container(port);
             factory.Produce(container);
 
             var moving = (Moving) loading.Transit();
@@ -91,21 +91,39 @@ namespace TransportTycoon.WithTypes
         [Fact]
         public void Unload_container_to_port()
         {
+            //todo - simplify state design. Too many dependencies.
             var factory = new Factory();
             var port = new Port();
 
-            factory.Produce(new Container());
+            factory.Produce(new Container(port));
 
-            var loading = new Loading(factory, port);
+            var loading = new Loading(factory, () => new Unloading(factory, port));
             var moving = loading.Transit();
             var unloading = moving.Transit();
             unloading.Transit();
 
             Assert.Single(port.Inventory);
         }
+
+        [Fact]
+        public void Unload_container_to_b()
+        {
+            var factory = new Factory();
+            var b = new WarehouseB();
+
+            factory.Produce(new Container(b));
+
+            var loading = new Loading(factory, () => new Unloading(factory, b));
+            var moving = loading.Transit();
+            var unloading = moving.Transit();
+            unloading.Transit();
+
+            Assert.Single(b.Inventory);
+        }
     }
 
-    public class Port {
+    public abstract class Destination 
+    {
         public IEnumerable<Container> Inventory => inventory;
         readonly Queue<Container> inventory = new Queue<Container>();
 
@@ -113,6 +131,14 @@ namespace TransportTycoon.WithTypes
         {
             inventory.Enqueue(container);
         }
+    }
+
+    public class WarehouseB : Destination
+    {
+    }
+
+    public class Port : Destination
+    {
     }
 
     public class Factory
@@ -124,27 +150,28 @@ namespace TransportTycoon.WithTypes
 
         public T LoadContainer<T>(Func<Container, T> one, Func<T> none)
         {
-            return inventory.Any() 
-                ? one(inventory.Dequeue()) 
+            return inventory.Any()
+                ? one(inventory.Dequeue())
                 : none();
         }
 
         readonly Queue<Container> inventory = new Queue<Container>();
     }
 
-    public abstract class State {
+    public abstract class State
+    {
         public abstract State Transit();
     }
 
     public class Loading : State
     {
         readonly Factory factory;
-        Port port;
+        readonly Func<State> unloading;
 
-        public Loading(Factory factory, Port port)
+        public Loading(Factory factory, Func<Unloading> unloading)
         {
             this.factory = factory;
-            this.port = port;
+            this.unloading = unloading;
         }
 
         public override State Transit()
@@ -154,8 +181,10 @@ namespace TransportTycoon.WithTypes
 
         Moving Move(Container container)
         {
+            //todo - derive from current time, container's travel time
             var arrivalTime = Moment.From(1);
-            return new Moving(container, factory, port, arrivalTime);
+            var unloading = this.unloading;
+            return new Moving(container, arrivalTime, unloading);
         }
 
         Loading Stay() => this;
@@ -163,20 +192,18 @@ namespace TransportTycoon.WithTypes
 
     public class Moving : State
     {
-        readonly Factory factory;
-        Port port;
+        readonly Func<State> unloading;
 
-        public Moving(Container container, Factory factory, Port port, Moment arrivalTime)
+        public Moving(Container container, Moment arrivalTime, Func<State> unloading)
         {
             Container = container;
-            this.factory = factory;
             ArrivalTime = arrivalTime;
-            this.port = port;
+            this.unloading = unloading;
         }
 
         public override State Transit()
         {
-            return new Unloading(factory, port);
+            return unloading();
         }
 
         public Container Container { get; }
@@ -186,38 +213,48 @@ namespace TransportTycoon.WithTypes
     public class Unloading : State
     {
         readonly Factory factory;
-        Port port;
+        readonly Destination destination;
 
-        public Unloading(Factory factory, Port port)
+        public Unloading(Factory factory, Destination destination)
         {
             this.factory = factory;
-            this.port = port;
+            this.destination = destination;
         }
 
         public override State Transit()
         {
-            port.Replenish(new Container());
+            var container = new Container(destination);
 
-            return new Returning(factory, port);
+            destination.Replenish(container);
+
+            return new Returning(factory);
         }
     }
 
     public class Returning : State
     {
         readonly Factory factory;
-        Port port;
 
-        public Returning(Factory factory, Port port)
+        public Returning(Factory factory)
         {
             this.factory = factory;
-            this.port = port;
         }
 
         public override State Transit()
         {
-            return new Loading(factory, port);
+            //todo - move to Loading.Move
+            Func<Unloading> unloading = () => new Unloading(factory, null);
+            return new Loading(factory, unloading);
         }
     }
 
-    public class Container { }
+    public class Container
+    {
+        public Container(Destination destination)
+        {
+            Destination = destination;
+        }
+
+        public Destination Destination { get; }
+    }
 }
