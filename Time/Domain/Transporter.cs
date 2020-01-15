@@ -1,3 +1,5 @@
+using Value;
+
 namespace TransportTycoon.Domain
 {
     public abstract class Transporter
@@ -10,8 +12,8 @@ namespace TransportTycoon.Domain
         }
 
         public bool Carries(Container container) => state.Carries(container);
-        public void Move() => state = state.Move();
-        protected void Load(Storage storage) => state = state.Load(storage);
+        public void Move(Time currentTime) => state = state.Move(currentTime);
+        protected void Load(Storage storage, Time currentTime) => state = state.Load(storage, currentTime);
         protected void Unload(Storage storage) => state = state.Unload(storage);
 
         public bool AtOrigin()
@@ -21,10 +23,10 @@ namespace TransportTycoon.Domain
 
         abstract class State
         {
-            public virtual State Move() => this;
+            public virtual State Move(Time currentTime) => this;
             public virtual State Unload(Storage storage) => this;
             public virtual bool Carries(Container other) => false;
-            public virtual State Load(Storage storage) => this;
+            public virtual State Load(Storage storage, Time currentTime) => this;
             public virtual bool AtOrigin() => false;
         }
 
@@ -37,7 +39,7 @@ namespace TransportTycoon.Domain
                 this.origin = origin;
             }
 
-            public override State Load(Storage storage)
+            public override State Load(Storage storage, Time currentTime)
             {
                 State next = this;
 
@@ -45,8 +47,9 @@ namespace TransportTycoon.Domain
                 {
                     var destination = container.LocationAfter(origin);
                     var transportationTime = Time.Between(origin, destination);
-
-                    next = new Delivering(container, transportationTime, origin);
+                    var deliveryTime = currentTime.Add(transportationTime);
+                    
+                    next = new Delivering(container, deliveryTime, origin);
                 });
 
                 return next;
@@ -61,28 +64,24 @@ namespace TransportTycoon.Domain
         class Delivering : State
         {
             readonly Container container;
-            readonly Time transportationTime;
-            Time travelTime;
+            readonly Time deliveryTime;
             readonly Location origin;
 
             public Delivering(
                 Container container,
-                Time transportationTime,
+                Time deliveryTime,
                 Location origin)
             {
                 this.container = container;
-                this.transportationTime = transportationTime;
+                this.deliveryTime = deliveryTime;
                 this.origin = origin;
-                travelTime = Time.Zero;
             }
 
-            public override State Move()
+            public override State Move(Time currentTime)
             {
-                travelTime = travelTime.Advance();
-
-                if (travelTime == transportationTime)
+                if (currentTime == deliveryTime)
                 {
-                    return new Unloading(container, transportationTime, origin);
+                    return new Unloading(container, deliveryTime, origin);
                 }
 
                 return this;
@@ -94,16 +93,16 @@ namespace TransportTycoon.Domain
         class Unloading : State
         {
             readonly Container container;
-            readonly Time transportationTime;
+            readonly Time deliveryTime;
             readonly Location origin;
 
             public Unloading(
                 Container container,
-                Time transportationTime,
+                Time deliveryTime,
                 Location origin)
             {
                 this.container = container;
-                this.transportationTime = transportationTime;
+                this.deliveryTime = deliveryTime;
                 this.origin = origin;
             }
 
@@ -113,8 +112,8 @@ namespace TransportTycoon.Domain
 
                 if (destination == storage.Location)
                 {
-                    storage.Stock(container.With(transportationTime));
-                    return new Returning(transportationTime, origin);
+                    storage.Stock(container.With(deliveryTime));
+                    return new Returning(deliveryTime, origin);
                 }
 
                 return this;
@@ -134,7 +133,7 @@ namespace TransportTycoon.Domain
                 travelTime = Time.Zero;
             }
 
-            public override State Move()
+            public override State Move(Time currentTime)
             {
                 travelTime = travelTime.Advance();
 

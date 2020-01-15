@@ -31,12 +31,13 @@ namespace TransportTycoon.Domain
 
         public int Value { get; }
 
-        public Time(int value) => Value = value;
 
         public Time Advance() => new Time(Value + 1);
 
         public Time Add(Time added) => new Time(Value + added.Value);
 
         public override string ToString() => Value.ToString();
+        
+        Time(int value) => Value = value;
     }
 }

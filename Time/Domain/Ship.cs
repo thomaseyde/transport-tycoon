@@ -7,7 +7,7 @@ namespace TransportTycoon.Domain
         {
         }
 
-        public void LoadFrom(Port port) => Load(port);
+        public void LoadFrom(Port port, Time currentTime) => Load(port, currentTime);
 
         public void UnloadTo(Warehouse warehouse) => Unload(warehouse);
     }

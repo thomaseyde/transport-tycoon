@@ -11,9 +11,9 @@ namespace TransportTycoon.Domain
 
         public Time TravelTime => state.TravelTime;
 
-        public Container With(Time added)
+        public Container With(Time deliveryTime)
         {
-            state = state.With(added);
+            state = state.With(deliveryTime);
             return this;
         }
 
@@ -40,10 +40,10 @@ namespace TransportTycoon.Domain
 
             public State With(Time time)
             {
-                return With(time, destination);
+                return With(destination, time);
             }
 
-            protected abstract State With(Time time, Destination destination);
+            protected abstract State With(Destination destination, Time arrivalTime);
         }
 
         class Produced : State
@@ -51,9 +51,9 @@ namespace TransportTycoon.Domain
             public Produced(Destination destination) : base(destination) {
             }
 
-            protected override State With(Time time, Destination destination)
+            protected override State With(Destination destination, Time arrivalTime)
             {
-                return new Transporting(destination, time);
+                return new Transporting(destination, arrivalTime);
             }
         }
 
@@ -66,9 +66,9 @@ namespace TransportTycoon.Domain
                 this.currentTime = currentTime;
             }
 
-            protected override State With(Time time, Destination destination)
+            protected override State With(Destination destination, Time arrivalTime)
             {
-                return new Transporting(destination, currentTime.Add(time));
+                return new Transporting(destination, arrivalTime);
             }
 
             public override Time TravelTime => currentTime;
