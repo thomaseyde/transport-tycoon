@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using TransportTycoon.Domain;
+using TransportTycoon.Time;
 using Xunit;
 
 namespace TransportTycoon.Tests

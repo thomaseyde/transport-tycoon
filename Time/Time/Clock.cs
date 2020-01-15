@@ -1,4 +1,4 @@
-namespace TransportTycoon.Domain
+namespace TransportTycoon.Time
 {
     public class Clock
     {

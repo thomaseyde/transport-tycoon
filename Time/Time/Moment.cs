@@ -1,7 +1,8 @@
 using System;
+using TransportTycoon.Domain;
 using Value;
 
-namespace TransportTycoon.Domain
+namespace TransportTycoon.Time
 {
     public class Moment : ValueObject
     {

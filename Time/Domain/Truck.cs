@@ -1,3 +1,5 @@
+using TransportTycoon.Time;
+
 namespace TransportTycoon.Domain
 {
     public class Truck : Transporter
