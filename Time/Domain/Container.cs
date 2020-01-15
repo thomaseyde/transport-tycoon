@@ -2,76 +2,24 @@ namespace TransportTycoon.Domain
 {
     public class Container
     {
-        State state;
+        readonly Destination destination;
+        public Time TravelTime { get; set; }
 
         public Container(Destination destination)
         {
-            state = new Produced(destination);
+            this.destination = destination;
+            TravelTime = Time.Zero;
         }
 
-        public Time TravelTime => state.TravelTime;
-
-        public Container With(Time deliveryTime)
+        public Container With(Time currentTime)
         {
-            state = state.With(deliveryTime);
+            TravelTime = currentTime;
             return this;
         }
 
         public Location LocationAfter(Location origin)
         {
-            return state.LocationAfter(origin);
-        }
-
-        abstract class State
-        {
-            public virtual Time TravelTime => Time.Zero;
-
-            readonly Destination destination;
-
-            protected State(Destination destination)
-            {
-                this.destination = destination;
-            }
-
-            public Location LocationAfter(Location origin)
-            {
-                return origin.NextLocationTowards(destination.Location);
-            }
-
-            public State With(Time time)
-            {
-                return With(destination, time);
-            }
-
-            protected abstract State With(Destination destination, Time arrivalTime);
-        }
-
-        class Produced : State
-        {
-            public Produced(Destination destination) : base(destination) {
-            }
-
-            protected override State With(Destination destination, Time arrivalTime)
-            {
-                return new Transporting(destination, arrivalTime);
-            }
-        }
-
-        class Transporting : State
-        {
-            readonly Time currentTime;
-
-            public Transporting(Destination destination, Time currentTime) : base(destination)
-            {
-                this.currentTime = currentTime;
-            }
-
-            protected override State With(Destination destination, Time arrivalTime)
-            {
-                return new Transporting(destination, arrivalTime);
-            }
-
-            public override Time TravelTime => currentTime;
+            return origin.NextLocationTowards(destination.Location);
         }
     }
 }

@@ -14,12 +14,10 @@ namespace TransportTycoon.Domain
             containers.Add(container);
         }
 
-        public int TotalTravelTime()
+        public int LongestDeliveryTime()
         {
-
             return containers
                    .Select(container => container.TravelTime)
-                   .Select(travelTime => travelTime)
                    .Prepend(Time.Zero)
                    .Max(time => time.Value);
         }

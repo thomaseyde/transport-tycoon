@@ -29,19 +29,19 @@ namespace TransportTycoon.Tests
             {
                 clock.Tick();
                 ship.Move(clock.Now);
-                ship.UnloadTo(warehouse);
+                ship.UnloadTo(warehouse, clock.Now);
                 Assert.True(ship.Carries(container));
             }
 
             clock.Tick();
 
             ship.Move(clock.Now);
-            ship.UnloadTo(warehouse);
+            ship.UnloadTo(warehouse, clock.Now);
 
             Assert.NotEmpty(warehouse.Containers);
             Assert.False(ship.Carries(container));
 
-            Assert.Equal(4, deliveries.TotalTravelTime());
+            Assert.Equal(4, deliveries.LongestDeliveryTime());
             Assert.Single(deliveries);
         }
 
@@ -68,18 +68,18 @@ namespace TransportTycoon.Tests
             {
                 clock.Tick();
                 truck.Move(clock.Now);
-                truck.UnloadTo(warehouse);
+                truck.UnloadTo(warehouse, clock.Now);
                 Assert.True(truck.Carries(container));
             }
 
             clock.Tick();
             truck.Move(clock.Now);
-            truck.UnloadTo(warehouse);
+            truck.UnloadTo(warehouse, clock.Now);
 
             Assert.NotEmpty(warehouse.Containers);
             Assert.False(truck.Carries(container));
 
-            Assert.Equal(5, deliveries.TotalTravelTime());
+            Assert.Equal(5, deliveries.LongestDeliveryTime());
             Assert.Single(deliveries);
         }
 
@@ -92,36 +92,39 @@ namespace TransportTycoon.Tests
             var factory = new Factory();
             var container = new Container(Destination.WarehouseA);
 
-            factory.Produce(container);
-
-            Assert.NotEmpty(factory.Containers);
-
             Assert.True(truck.AtOrigin());
 
-            truck.LoadFrom(factory, clock.Now);
+            factory.Produce(container);
+            Assert.NotEmpty(factory.Containers);
 
+            truck.LoadFrom(factory, clock.Now);
             Assert.Empty(factory.Containers);
             Assert.True(truck.Carries(container));
 
             clock.Tick();
 
             truck.Move(clock.Now);
-            truck.UnloadTo(port);
+            
+            truck.UnloadTo(port, clock.Now);
 
             Assert.NotEmpty(port.Containers);
             Assert.False(truck.Carries(container));
             Assert.False(truck.AtOrigin());
 
+            clock.Tick();
+            
             truck.Move(clock.Now);
-            Assert.True(truck.AtOrigin());
 
+            Assert.True(truck.AtOrigin());
         }
 
         [Theory]
         [InlineData("A", 5)]
-        //[InlineData("B", 5)]
-        //[InlineData("AB", 5)]
-        //[InlineData("ABB", 7)]
+        [InlineData("B", 5)]
+        [InlineData("AB", 5)]
+        [InlineData("ABB", 7)]
+        //[InlineData("AABABBAB", 29)]
+        //[InlineData("ABBBABAAABBB", 47)]
         public void All(string destinations, int time)
         {
             var clock = new Clock();
@@ -154,32 +157,33 @@ namespace TransportTycoon.Tests
 
             while (deliveries.Undelivered(destinations.Length))
             {
+                // todo - unload/load/tick/move order is important
+                truck1.UnloadTo(port, clock.Now);
+                truck1.UnloadTo(warehouseB, clock.Now);
+
+                truck2.UnloadTo(port, clock.Now);
+                truck2.UnloadTo(warehouseB, clock.Now);
+
+                ship.UnloadTo(warehouseA, clock.Now);
+
                 truck1.LoadFrom(factory, clock.Now);
                 truck2.LoadFrom(factory, clock.Now);
                 ship.LoadFrom(port, clock.Now);
 
                 clock.Tick();
-                
+
                 truck1.Move(clock.Now);
                 truck2.Move(clock.Now);
                 ship.Move(clock.Now);
 
-                truck1.UnloadTo(port);
-                truck1.UnloadTo(warehouseB);
-
-                truck2.UnloadTo(port);
-                truck2.UnloadTo(warehouseB);
-
-                ship.UnloadTo(warehouseA);
-
-                if (iterations++ > 100)
+                if (iterations++ > 1_000)
                 {
                     break;
                 }
             }
 
             Assert.Equal(destinations.Length, deliveries.Count());
-            Assert.Equal(time, deliveries.TotalTravelTime());
+            Assert.Equal(time, deliveries.LongestDeliveryTime());
         }
     }
 }

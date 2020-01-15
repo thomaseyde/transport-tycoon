@@ -5,26 +5,30 @@ namespace TransportTycoon.Domain
 {
     public abstract class Storage
     {
-        public List<Container> Containers { get; }
+        readonly List<Container> containers;
+
+        public IEnumerable<Container> Containers => containers;
+
         public Location Location { get; }
 
         protected Storage(Location location)
         {
             Location = location;
-            Containers = new List<Container>();
+            containers = new List<Container>();
         }
 
-        public void Stock(Container container)
+        public void Replenish(Container container)
         {
-            Containers.Add(container);
+            containers.Add(container);
             OnStocked(container);
         }
 
-        public void LoadContainer(Action<Container> load)
+        public void Deplete(Action<Container> load)
         {
-            if (Containers.Count == 0) return;
-            load(Containers[0]);
-            Containers.RemoveAt(0);
+            if (containers.Count == 0) return;
+            var container = containers[0];
+            containers.RemoveAt(0);
+            load(container);
         }
 
         protected virtual void OnStocked(Container container) { }
