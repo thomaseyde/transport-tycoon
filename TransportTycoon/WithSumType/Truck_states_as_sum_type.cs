@@ -1,6 +1,5 @@
 ﻿using TransportTycoon.Time;
 using TransportTycoon.WithSumType.Stores;
-using TransportTycoon.WithSumType.Trucks.Behaviors;
 using Xunit;
 
 namespace TransportTycoon.WithSumType
@@ -13,26 +12,26 @@ namespace TransportTycoon.WithSumType
             var factory = new Factory();
             var port = new Port();
 
-            var loading = (Loading)Truck.Create(factory, port);
+            var loading = (Truck.Loading)Truck.Create(factory, port);
 
-            var delivering = (Delivering) loading.Move();
+            var delivering = (Truck.Delivering) loading.Move();
 
             Assert.NotNull(delivering.Container);
             Assert.Equal(Moment.From(1), delivering.DeliveryTime);
 
-            var unloading = (Unloading) delivering.Move();
+            var unloading = (Truck.Unloading) delivering.Move();
 
             Assert.Equal(Moment.From(1), unloading.DeliveryTime);
 
-            var returning = (Returning) unloading.Move();
+            var returning = (Truck.Returning) unloading.Move();
 
             Assert.True(port.Holds(unloading.Container));
 
             Assert.Equal(Moment.From(2), returning.ArrivalTime);
 
-            var loadingAgain = (Loading) returning.Move();
+            var loadingAgain = (Truck.Loading) returning.Move();
 
-            Assert.IsType<Loading>(loadingAgain);
+            Assert.NotNull(loadingAgain);
         }
     }
 }
