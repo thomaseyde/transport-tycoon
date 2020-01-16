@@ -1,10 +1,36 @@
-﻿namespace TransportTycoon.WithSumType.Trucks.Behaviors
+﻿using TransportTycoon.WithSumType.Maps;
+using TransportTycoon.WithSumType.Stores;
+
+namespace TransportTycoon.WithSumType.Trucks.Behaviors
 {
-    class Loading : IBehaviour
+    class Loading : Truck
     {
-        public IBehaviour TransitionFrom(Truck current)
+        readonly Factory factory;
+        readonly Port port;
+
+        public Loading(Factory factory, Port port)
         {
-            return current.Loading(this);
+            this.factory = factory;
+            this.port = port;
         }
+
+        public Truck Move()
+        {
+            return factory.Load(Any, None);
+        }
+
+        Truck Any(Container container)
+        {
+            var arrivalTime = Timetable.ArrivalTime(
+                factory.Location,
+                container.Destination);
+
+            return new Delivering(
+                container.With(arrivalTime),
+                factory,
+                port);
+        }
+
+        Loading None() => this;
     }
 }

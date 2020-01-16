@@ -1,5 +1,5 @@
 ﻿using TransportTycoon.Time;
-using TransportTycoon.WithSumType.Trucks;
+using TransportTycoon.WithSumType.Stores;
 using TransportTycoon.WithSumType.Trucks.Behaviors;
 using Xunit;
 
@@ -10,39 +10,29 @@ namespace TransportTycoon.WithSumType
         [Fact]
         public void Test()
         {
-            var factory = new Stores.Factory();
-            var port = new Stores.Port();
+            var factory = new Factory();
+            var port = new Port();
 
-            var truck = new Truck(factory, port);
+            var loading = (Loading)Truck.Create(factory, port);
 
-            truck.Move();
-
-            var delivering = truck.StateAs<Delivering>();
+            var delivering = (Delivering) loading.Move();
 
             Assert.NotNull(delivering.Container);
-            Assert.Equal(Moment.From(1), delivering.Container.DeliveryTime);
+            Assert.Equal(Moment.From(1), delivering.DeliveryTime);
 
-            truck.Move();
+            var unloading = (Unloading) delivering.Move();
 
-            var unloading = truck.StateAs<Unloading>();
-            var deliveredContainer = unloading.Container;
+            Assert.Equal(Moment.From(1), unloading.DeliveryTime);
 
-            Assert.Equal(Moment.From(1), deliveredContainer.DeliveryTime);
+            var returning = (Returning) unloading.Move();
 
-            truck.Move();
+            Assert.True(port.Holds(unloading.Container));
 
-            Assert.True(port.Holds(deliveredContainer));
-
-            var returning = truck.StateAs<Returning>();
-
-            Assert.IsType<Returning>(returning);
             Assert.Equal(Moment.From(2), returning.ArrivalTime);
 
-            truck.Move();
+            var loadingAgain = (Loading) returning.Move();
 
-            var loading = truck.StateAs<Loading>();
-
-            Assert.IsType<Loading>(loading);
+            Assert.IsType<Loading>(loadingAgain);
         }
     }
 }
