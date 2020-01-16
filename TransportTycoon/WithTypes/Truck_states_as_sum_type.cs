@@ -1,8 +1,8 @@
 ﻿using TransportTycoon.Time;
-using TransportTycoon.WithSumType.Stores;
+using TransportTycoon.WithTypes.Stores;
 using Xunit;
 
-namespace TransportTycoon.WithSumType
+namespace TransportTycoon.WithTypes
 {
     public class Truck_states_as_sum_type
     {

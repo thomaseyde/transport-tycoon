@@ -1,7 +1,7 @@
 ﻿using System;
 using TransportTycoon.Time;
 
-namespace TransportTycoon.WithSumType.Stores
+namespace TransportTycoon.WithTypes.Stores
 {
     class Factory
     {

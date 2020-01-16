@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TransportTycoon.WithSumType.Stores
+namespace TransportTycoon.WithTypes.Stores
 {
     class Port
     {

@@ -1,7 +1,7 @@
 ﻿using TransportTycoon.Time;
-using TransportTycoon.WithSumType.Stores;
+using TransportTycoon.WithTypes.Stores;
 
-namespace TransportTycoon.WithSumType.Maps
+namespace TransportTycoon.WithTypes.Maps
 {
     class Timetable
     {

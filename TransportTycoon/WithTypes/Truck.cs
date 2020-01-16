@@ -1,8 +1,8 @@
 ﻿using TransportTycoon.Time;
-using TransportTycoon.WithSumType.Maps;
-using TransportTycoon.WithSumType.Stores;
+using TransportTycoon.WithTypes.Maps;
+using TransportTycoon.WithTypes.Stores;
 
-namespace TransportTycoon.WithSumType
+namespace TransportTycoon.WithTypes
 {
     abstract class Truck
     {
