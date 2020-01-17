@@ -9,7 +9,7 @@ namespace TransportTycoon.WithTypes
         [Fact]
         public void Test()
         {
-            var factory = new Factory();
+            var factory = new Stores.Factory();
             var port = new Port();
 
             var loading = (Truck.Loading)Truck.Create(factory, port);

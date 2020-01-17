@@ -6,7 +6,7 @@ namespace TransportTycoon.WithTypes
 {
     abstract class Truck
     {
-        public static Truck Create(Factory factory, Port port)
+        public static Truck Create(Stores.Factory factory, Port port)
         {
             return new Loading(factory, port);
         }
@@ -32,13 +32,13 @@ namespace TransportTycoon.WithTypes
 
             Loading None() => this;
 
-            public Loading(Factory factory, Port port)
+            public Loading(Stores.Factory factory, Port port)
             {
                 this.factory = factory;
                 this.port = port;
             }
 
-            readonly Factory factory;
+            readonly Stores.Factory factory;
             readonly Port port;
         }
 
@@ -52,7 +52,7 @@ namespace TransportTycoon.WithTypes
                 return new Unloading(Container, port, factory);
             }
 
-            public Delivering(Container container, Factory factory, Port port)
+            public Delivering(Container container, Stores.Factory factory, Port port)
             {
                 Container = container;
                 this.port = port;
@@ -60,7 +60,7 @@ namespace TransportTycoon.WithTypes
             }
 
             readonly Port port;
-            readonly Factory factory;
+            readonly Stores.Factory factory;
         }
 
         public class Unloading : Truck
@@ -79,7 +79,7 @@ namespace TransportTycoon.WithTypes
                 return new Returning(arrivalTime, factory, port);
             }
 
-            public Unloading(Container container, Port port, Factory factory)
+            public Unloading(Container container, Port port, Stores.Factory factory)
             {
                 Container = container;
                 this.port = port;
@@ -87,7 +87,7 @@ namespace TransportTycoon.WithTypes
             }
 
             readonly Port port;
-            readonly Factory factory;
+            readonly Stores.Factory factory;
         }
 
         public class Returning : Truck
@@ -99,14 +99,14 @@ namespace TransportTycoon.WithTypes
                 return new Loading(factory, port);
             }
 
-            public Returning(Moment arrivalTime, Factory factory, Port port)
+            public Returning(Moment arrivalTime, Stores.Factory factory, Port port)
             {
                 ArrivalTime = arrivalTime;
                 this.factory = factory;
                 this.port = port;
             }
 
-            readonly Factory factory;
+            readonly Stores.Factory factory;
             readonly Port port;
         }
 
